@@ -13,8 +13,11 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,9 +27,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.newsapp.MockData
 import com.example.newsapp.NewsData
 import com.example.newsapp.R
+import com.example.newsapp.models.TopNewsArticle
+import com.skydoves.landscapist.coil.CoilImage
 
 @Composable
-fun DetailScreen(newsData: NewsData, scrollState: ScrollState, navController: NavController) {
+fun DetailScreen(article: TopNewsArticle, scrollState: ScrollState, navController: NavController) {
 
     Scaffold(
         topBar = {
@@ -41,19 +46,24 @@ fun DetailScreen(newsData: NewsData, scrollState: ScrollState, navController: Na
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "Detail Screen", fontWeight = FontWeight.SemiBold)
-            Image(painter = painterResource(id = newsData.image),
-                contentDescription = "image"
+
+            CoilImage(
+                imageModel = article.urlToImage,
+                contentScale = ContentScale.Crop,
+                error = ImageBitmap.imageResource(R.drawable.breaking_news),
+                placeHolder = ImageBitmap.imageResource(R.drawable.breaking_news)
             )
+
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                InfoWithIcon(icon = Icons.Default.Edit, info = newsData.author)
-                InfoWithIcon(icon = Icons.Default.DateRange, info = newsData.publishedAt)
+                InfoWithIcon(icon = Icons.Default.Edit, info = article.author?:"Not Available")
+                InfoWithIcon(icon = Icons.Default.DateRange, info = article.publishedAt!!)
             }
-            Text(text = newsData.title, fontWeight = FontWeight.Bold)
-            Text(text = newsData.description,
+            Text(text = article.title?:"Not Available", fontWeight = FontWeight.Bold)
+            Text(text = article.description?:"Not Available",
                 modifier = Modifier.padding(top = 16.dp)
             )
 
@@ -98,7 +108,12 @@ fun AppBarNavIcon(onBackPressed: () -> Unit = {}) {
 @Composable
 fun DetailScreenPreview() {
     DetailScreen(
-        newsData = MockData.topNewsList[1],
+        TopNewsArticle(
+            author = "Bob Smith",
+            title = "Super Catchy Clickbait Title",
+            description = "You should seen it... if you had been there, you would have done the same. He had it comi'. He only had himself to blame",
+            publishedAt = "2021-11-04T04:42:40Z"
+        ),
         rememberScrollState(),
         rememberNavController()
     )

@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,24 +23,29 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.newsapp.MockData
 import com.example.newsapp.NewsData
+import com.example.newsapp.R
+import com.example.newsapp.models.TopNewsArticle
+import com.skydoves.landscapist.coil.CoilImage
 
 @Composable
-fun TopNews(navController: NavController) {
+fun TopNews(navController: NavController, articles: List<TopNewsArticle>) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "Top News", fontWeight = FontWeight.SemiBold)
         LazyColumn {
-            items(MockData.topNewsList) {
-                newsData ->
-                TopNewsItem(newsData = newsData, onNewsClicked = {
-                    navController.navigate("Detail/${newsData.id}")
-                })
+            items(articles.size) {
+                index ->
+                TopNewsItem(
+                    article = articles[index],
+                    onNewsClicked = { navController.navigate("Detail/$index") }
+                )
+
             }
         }
     }
 }
 
 @Composable
-fun TopNewsItem(newsData: NewsData, onNewsClicked: () -> Unit = {}) {
+fun TopNewsItem(article: TopNewsArticle, onNewsClicked: () -> Unit = {}) {
     Box(modifier = Modifier
         .height(200.dp)
         .padding(8.0.dp)
@@ -46,20 +53,22 @@ fun TopNewsItem(newsData: NewsData, onNewsClicked: () -> Unit = {}) {
             onNewsClicked()
         }
     ) {
-        Image(painter = painterResource(id = newsData.image), 
-            contentDescription = "newsDataItem", 
-            contentScale = ContentScale.FillBounds
+        CoilImage(
+            imageModel = article.urlToImage,
+            contentScale = ContentScale.Crop,
+            error = ImageBitmap.imageResource(R.drawable.breaking_news),
+            placeHolder = ImageBitmap.imageResource(R.drawable.breaking_news)
         )
         Column(modifier = Modifier
             .wrapContentHeight()
             .padding(top = 16.dp, start = 16.dp),
              verticalArrangement = Arrangement.SpaceBetween) {
-            Text(text = newsData.publishedAt,
+            Text(text = article.publishedAt!!,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(80.dp))
-            Text(text = newsData.title,
+            Text(text = article.title!!,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold
             )
@@ -72,8 +81,7 @@ fun TopNewsItem(newsData: NewsData, onNewsClicked: () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun TopNewsPreview() {
-    TopNewsItem(newsData = NewsData(
-        id = 2,
+    TopNewsItem(TopNewsArticle(
         author = "Namita Singh",
         title = "Cleo Smith News - live: suspect in hospital",
         description = "the suspected kidnapper of people is caught",
